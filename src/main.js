@@ -1,6 +1,7 @@
 import 'maplibre-gl/dist/maplibre-gl.css';
 import * as maplibregl from 'maplibre-gl';
 import { createTriangleLayer } from './triangleLayer.js';
+import { createPointCloudLayer } from './pointCloudLayer.js';
 
 // Coordenadas clave en Tafira [Longitud, Latitud]
 const CARRIZAL = [-15.406939, 27.913489];
@@ -46,8 +47,8 @@ map.on('load', () => {
     exaggeration: 1.5 // Factor de multiplicación del relieve
   });
 
-  const triangleLayer = createTriangleLayer('capa-triangulo-tafira', CARRIZAL, 100);
-  map.addLayer(triangleLayer);
+  const nubeLayer = createPointCloudLayer('nube-50k-tafira', CARRIZAL, 320);
+  map.addLayer(nubeLayer);
 });
 
 // Exponer las instancias al objeto global para depuración en consola
