@@ -1,5 +1,6 @@
 import 'maplibre-gl/dist/maplibre-gl.css';
 import * as maplibregl from 'maplibre-gl';
+import { createTriangleLayer } from './triangleLayer.js';
 
 // Coordenadas clave en Tafira [Longitud, Latitud]
 const CARRIZAL = [-15.406939, 27.913489];
@@ -39,47 +40,16 @@ map.on('load', () => {
     maxzoom: 12
   });
 
-  map.addSource('ruta-gc', {
-    type: 'geojson',
-    data: {
-      type: 'Feature',
-      geometry: {
-        type: 'LineString',
-        coordinates: [
-        [-15.4533, 28.0708], // Tafira (Informática)
-        [-15.4950, 28.0400], // Santa Brígida
-        [-15.5450, 28.0050], // San Mateo
-        [-15.6128, 27.9702]  // Roque Nublo
-        ]
-      }
-    }
-  });
-
-  map.addLayer({
-  id: 'linea-ruta',
-  type: 'line',
-  source: 'ruta-gc',
-  layout: {
-    'line-join': 'round',
-    'line-cap': 'round'
-  },
-  paint: {
-    'line-color': '#ffeb3b',
-    'line-width': 4
-  }
-});
-
 // 2. Activación del terreno 3D
   map.setTerrain({
     source: 'terrain-source',
     exaggeration: 1.5 // Factor de multiplicación del relieve
   });
 
-  map.on('mousedown', (e) => {
-      const elevation = map.queryTerrainElevation(e.lngLat);
-
-      if (elevation !== null) {
-        console.log(`Posición: [${e.lngLat.lng.toFixed(4)}, ${e.lngLat.lat.toFixed(4)}] | Altitud: ${elevation.toFixed(1)} m`);
-      }
-  })
+  const triangleLayer = createTriangleLayer('capa-triangulo-tafira', CARRIZAL, 100);
+  map.addLayer(triangleLayer);
 });
+
+// Exponer las instancias al objeto global para depuración en consola
+window.maplibregl = maplibregl;
+window.map = map;
