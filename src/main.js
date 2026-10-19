@@ -17,7 +17,10 @@ const map = new maplibregl.Map({
   zoom: 16,
   pitch: 55,   // Inclinación
   bearing: -20, // Orientación
-  maxPitch: 85
+  maxPitch: 85,
+
+  maxTileCacheSize: 100,
+  fadeDuration: 0
 });
 
 // Controles de navegación y escala métrica
@@ -25,60 +28,20 @@ map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-
 map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left');
 
 map.on('load', () => {
-  // Generar 2.000 puntos aleatorios alrededor de Gran Canaria
-  const puntos = Array.from({ length: 20000 }, (_, i) => ({
-    type: 'Feature',
-    properties: { id: i, valor: Math.random() * 100 },
-    geometry: {
-      type: 'Point',
-      coordinates: [
-        -15.4533 + (Math.random() - 0.5) * 0.15,
-        28.0708 + (Math.random() - 0.5) * 0.15
-      ]
-    }
-  }));
 
-  map.addSource('nube-puntos-geojson', {
-    type: 'geojson',
-    data: {type: 'FeatureCollection', features: puntos},
-    cluster: true,
-    clusterMaxZoom: 14,
-    clusterRadius: 10
+  map.addSource('terrain-source', {
+    type: 'raster-dem',
+    tiles: [
+      'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'
+    ],
+    encoding: 'terrarium', // Obligatorio: indica a MapLibre la fórmula de decodificación RGB
+    tileSize: 256,
+    maxzoom: 12
   });
 
-  map.addLayer({
-    id: 'clusters',
-    type: 'circle',
-    source: 'nube-puntos-geojson',
-    filter: ['has', 'point_count'],
-    paint: {
-      'circle-color': '#ff9800',
-      'circle-radius': 18
-    }
-  });
-
-  map.addLayer({
-    id: 'cluster-count',
-    type: 'symbol',
-    source: 'nube-puntos-geojson',
-    filter: ['has', 'point_count'],
-    layout: {
-      'text-field': '{point_count_abbreviated}',
-      'text-size': 12
-    },
-    paint: { 'text-color': '#ffffff' }
-  });
-
-  map.addLayer({
-    id: 'unclustered-point',
-    type: 'circle',
-    source: 'nube-puntos-geojson',
-    filter: ['!', ['has', 'point_count']],
-    paint: {
-      'circle-color': '#00e5ff',
-      'circle-radius': 5,
-      'circle-stroke-width': 1,
-      'circle-stroke-color': '#fff'
-    }
+// 2. Activación del terreno 3D
+  map.setTerrain({
+    source: 'terrain-source',
+    exaggeration: 1.5 // Factor de multiplicación del relieve
   });
 });
